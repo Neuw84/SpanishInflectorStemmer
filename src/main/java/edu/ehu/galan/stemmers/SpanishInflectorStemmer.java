@@ -17,9 +17,12 @@ package edu.ehu.galan.stemmers;
  *    along with this program; if not, write to the Free Software
  *    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-
+import java.util.AbstractList;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
+import java.util.Spliterator;
+import java.util.TreeMap;
 
 /**
  *
@@ -31,7 +34,7 @@ import java.util.Set;
  *
  * @author Angel Conde Manjon
  */
-public class SpanishInflectorStemmer{
+public class SpanishInflectorStemmer {
 
     /**
      * Cuts a suffix from a string (that is the number of chars given by the suffix)
@@ -144,7 +147,7 @@ public class SpanishInflectorStemmer{
             "ellas",
             "viescas"
     );
- 
+
     public String stem(String pString) {
         String lowerText = pString.toLowerCase();
         // Handle irregular ones
@@ -307,4 +310,128 @@ public class SpanishInflectorStemmer{
         //if no rule is fired just return the input
         return lowerText;
     }
+}
+
+/**
+ * This class is part of the Java Tools (see http://mpii.de/yago-naga/javatools). It is licensed
+ * under the Creative Commons Attribution License (see http://creativecommons.org/licenses/by/3.0)
+ * by the YAGO-NAGA team (see http://mpii.de/yago-naga).
+ *
+ *
+ *
+ *
+ *
+ * This class provides a very simple container implementation with zero overhead. A FinalSet bases
+ * on a sorted, unmodifiable array. The constructor can either be called with a sorted unmodifiable
+ * array (default constructor) or with an array that can be cloned and sorted beforehand if desired.
+ * Example:
+ * <PRE>
+ * FinalSet<String> f=new FinalSet("a","b","c");
+ * // equivalently:
+ * //   FinalSet<String> f=new FinalSet(new String[]{"a","b","c"});
+ * //   FinalSet<String> f=new FinalSet(SHALLNOTBECLONED,ISSORTED,"a","b","c");
+ * System.out.println(f.get(1));
+ * --> b
+ * </PRE>
+ *
+ * @param <T>
+ */
+class FinalSet<T extends Comparable> extends AbstractList<T> implements Set<T> {
+
+    /**
+     * Holds the data, must be sorted
+     */
+    public T[] data;
+
+    /**
+     * Constructs a FinalSet from an array, clones and sorts the array if indicated.
+     */
+    @SuppressWarnings("unchecked")
+    public FinalSet(boolean clone, T... a) {
+        if (clone) {
+            Comparable[] b = new Comparable[a.length];
+            System.arraycopy(a, 0, b, 0, a.length);
+            a = (T[]) b;
+        }
+        Arrays.sort(a);
+        data = a;
+    }
+
+    /**
+     * Constructs a FinalSet from an array that does not need to be cloned
+     */
+    public FinalSet(T... a) {
+        this(false, a);
+    }
+
+    /**
+     * Tells whether x is in the container
+     */
+    public boolean contains(T x) {
+        return (Arrays.binarySearch(data, x) >= 0);
+    }
+
+    /**
+     * Returns the position in the array or -1
+     */
+    public int indexOf(T x) {
+        int r = Arrays.binarySearch(data, x);
+        return (r >= 0 ? r : -1);
+    }
+
+    /**
+     * Returns the element at position i
+     */
+    @Override
+    public T get(int i) {
+        return (data[i]);
+    }
+
+    /**
+     * Returns the number of elements in this FinalSet
+     */
+    @Override
+    public int size() {
+        return (data.length);
+    }
+
+    @Override
+    public Spliterator<T> spliterator() {
+        return Set.super.spliterator();
+    }
+
+}
+/** 
+This class is part of the Java Tools (see http://mpii.de/yago-naga/javatools).
+It is licensed under the Creative Commons Attribution License 
+(see http://creativecommons.org/licenses/by/3.0) by 
+the YAGO-NAGA team (see http://mpii.de/yago-naga).
+  
+
+  
+ 
+
+Provides a nicer constructor for a TreeMap. 
+Example:
+<PRE>
+   FinalMap<String,Integer> f=new FinalMap(
+     "a",1,
+     "b",2,
+     "c",3);
+   System.out.println(f.get("b"));
+   --> 2
+</PRE>
+*/
+  class FinalMap<T1 extends Comparable,T2> extends TreeMap<T1,T2>{
+  /** Constructs a FinalMap from an array that contains key/value sequences */  
+  @SuppressWarnings("unchecked")
+  public FinalMap(Object... a) {
+    super();    
+    for(int i=0;i<a.length-1;i+=2) {
+      if(containsKey((T1)a[i])) throw new RuntimeException("Duplicate key in FinalMap: "+a[i]);
+      put((T1)a[i],(T2)a[i+1]);
+    }
+  }
+  
+  
 }
